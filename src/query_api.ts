@@ -12,14 +12,14 @@ export async function getCompletionOfPrompt(
     model = "code-davinci-002",
     temperature = 0,
     max_tokens = 150,
-    stop = ":=")  : Promise<string>{
+    stop = ":="): Promise<string> {
     const response = await openai.createCompletion({
         model, prompt, max_tokens, temperature, stop,
     })
     if (!response.data.choices || response.data.choices.length === 0) {
         throw new Error('OpenAI did not give any choices.')
     }
-    const result =  response.data.choices[0].text
+    const result = response.data.choices[0].text
     if (result === undefined) {
         throw new Error('OpenAI gave an undefined answer.')
     }
@@ -66,14 +66,14 @@ export async function runExample(key: string) {
 }
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-const openai = new oai.OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY}))
+const openai = new oai.OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY }))
 
-export async function getReply(request : ChatRequest) : Promise<Bubble>{
+export async function getReply(request: ChatRequest): Promise<Bubble> {
     const inputText = request.inputText
     const contextBubbles = request.bubbles
 
     const userid = request.session.account.id
-    let prompt : string;
+    let prompt: string;
     if (contextBubbles.length !== 0) {
         const context = contextBubbles.map(x => x.plaintext).join("")
         prompt = promptOfResponse(inputText, context)

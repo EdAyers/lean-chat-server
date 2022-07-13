@@ -2,12 +2,6 @@ import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
 
-// import { Octokit, App } from "https://cdn.skypack.dev/octokit?dts";
-
-// const client_id = Deno.env.get('CLIENT_ID')
-// const client_secret = Deno.env.get('CLIENT_SECRET')
-// const openai_api_key = Deno.env.get('OPENAI_API_KEY')
-
 serve(handle)
 
 async function github(url, access_token) {
@@ -26,9 +20,9 @@ const CORS = {
 }
 
 /** This returns the thing for the CORS preflight check.
- *  This code should be removed eventually by using a proper framework, more of a learning excercise for CORS.
+ *  This code should be removed eventually by using a proper webserver framework.
  */
-function handleCors(req: Request) {
+function handleCors(_req: Request) {
     return new Response(null, {
         status: 204,
         headers: CORS
