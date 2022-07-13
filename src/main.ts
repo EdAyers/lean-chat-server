@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
-import "https://deno.land/x/xhr@0.1.0/mod.ts";
+
 // import { Octokit, App } from "https://cdn.skypack.dev/octokit?dts";
 
 // const client_id = Deno.env.get('CLIENT_ID')
@@ -75,6 +75,6 @@ async function handle(req: Request) {
         }
 
     } catch (err) {
-        return new Response(`bad request: ${err.message}`, { status: 400, headers: CORS })
+        return new Response(`request error: ${err.message}`, { status: 500, headers: CORS })
     }
 }

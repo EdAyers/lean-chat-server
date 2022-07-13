@@ -1,29 +1,33 @@
+import "https://deno.land/x/xhr@0.1.0/mod.ts"; // https://github.com/denoland/deno/discussions/15040
 import { promptOfNlStatement, promptOfResponse, EXAMPLE_PROMPT } from "./prompting.ts";
-import OpenAI from "https://esm.sh/openai@3";
+import oai from "https://esm.sh/openai@3";
 import { Bubble, ChatRequest } from "./types.ts";
 
-const OpenAIApi = OpenAI.OpenAIApi
-const Configuration = OpenAI.Configuration
+const Configuration = oai.Configuration
 
 export async function getCompletionOfPrompt(
-    openai: OpenAIApi,
+    openai: oai.OpenAIApi,
     prompt: string,
     _user: string, // [todo] where is user id passed to openai?
     model = "code-davinci-002",
     temperature = 0,
     max_tokens = 150,
-    stop = ":=") {
+    stop = ":=")  : Promise<string>{
     const response = await openai.createCompletion({
         model, prompt, max_tokens, temperature, stop,
     })
     if (!response.data.choices || response.data.choices.length === 0) {
         throw new Error('OpenAI did not give any choices.')
     }
-    return response.data.choices[0].text
+    const result =  response.data.choices[0].text
+    if (result === undefined) {
+        throw new Error('OpenAI gave an undefined answer.')
+    }
+    return result
 }
 
-export async function isSafeOfResponse(
-    openai: OpenAIApi,
+export async function assertSafeResponse(
+    openai: oai.OpenAIApi,
     response: string
 ) {
     const threshold = -0.355;
@@ -42,16 +46,16 @@ export async function isSafeOfResponse(
     const result = output.data.choices[0]
     const _token = result.text;
     const logprob = result.logprobs?.top_logprobs?.[0]["2"] ?? 0
-    if (result.text === "2" && logprob < threshold) {
-        return true
-    } else {
-        return false
+    if (result.text !== "2") {
+        throw new Error(`Codex produced unsafe output: content-filter-alpha gave text ${result.text}`)
+    }
+    if (logprob >= threshold) {
+        throw new Error(`Codex produced logprob of ${logprob} but needs to be below ${threshold}`)
     }
 }
 
-
 export async function runExample(key: string) {
-    const openai = new OpenAIApi(new Configuration({ apiKey: key }))
+    const openai = new oai.OpenAIApi(new Configuration({ apiKey: key }))
     const resp = await getCompletionOfPrompt(openai, EXAMPLE_PROMPT, "1");
     const context = EXAMPLE_PROMPT + resp;
     console.log(EXAMPLE_PROMPT + resp)
@@ -62,7 +66,7 @@ export async function runExample(key: string) {
 }
 
 const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
-const openai = new OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY}))
+const openai = new oai.OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY}))
 
 export async function getReply(request : ChatRequest) : Promise<Bubble>{
     const inputText = request.inputText
@@ -78,10 +82,7 @@ export async function getReply(request : ChatRequest) : Promise<Bubble>{
     }
     const response = await getCompletionOfPrompt(openai, prompt, userid)
 
-    if (await isSafeOfResponse(openai, response)) {
-        return { user: "codex", plaintext: response + ":=", type: 'code' }
-    } else {
-        const message = "Codex generated an unsafe output."
-        throw new Error(message)
-    }
+    await assertSafeResponse(openai, response)
+
+    return { user: "codex", plaintext: response + ":=", type: 'code' }
 }
