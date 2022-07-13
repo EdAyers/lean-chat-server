@@ -1,6 +1,6 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
-import { Bubble, ChatRequest } from './types.ts'
+import { Bubble, RequestJson, Session } from './types.ts'
 // import { Octokit, App } from "https://cdn.skypack.dev/octokit?dts";
 
 // const client_id = Deno.env.get('CLIENT_ID')
@@ -33,31 +33,47 @@ function handleCors(req: Request) {
     })
 }
 
+const sessionsCache = new Map<string, Session & {email: string}>()
+
 async function handle(req: Request) {
     if (req.method === "OPTIONS") {
         return handleCors(req);
     }
     try {
-        const r : ChatRequest = await req.json()
-        console.log(`Got session for user ${r.session.account.label}`)
+        const r : RequestJson = await req.json()
+        if (!r.kind) {
+            throw new Error(`Accepted kinds are 'ping' and 'chat'`);
+        }
         const access_token = r.session.accessToken
-        const userInfo = await github(`https://api.github.com/user`, access_token)
-        console.log(`Got response ${JSON.stringify(userInfo)}`)
-        let email: string = userInfo.email
-        if (!email) {
-            const emails = await github(`https://api.github.com/user/emails`, access_token)
-            console.log(`Got emails ${JSON.stringify(emails)}`)
-            email = emails.find(e => e.primary).email
+        if (!access_token) {
+            throw new Error(`Access token not provided`);
+        }
+        if (!sessionsCache.has(access_token)) {
+            console.log(`New session for user ${r.session.account.label}`)
+            const userInfo = await github(`https://api.github.com/user`, access_token)
+            console.log(`Got response ${JSON.stringify(userInfo)}`)
+            let email: string = userInfo.email
+            if (!email) {
+                const emails = await github(`https://api.github.com/user/emails`, access_token)
+                email = emails.find(e => e.primary).email
+            }
+            if (!email) {
+                throw new Error(`Failed to get an email address for user.`)
+            }
+            console.log(`Got email ${email}`);
+            sessionsCache.set(access_token, {...r.session, email})
         }
         // we don't actually need your email,
         // I am just doing this to prove to myself that it actually authenticated.
+        if (r.kind === 'chat') {
+            const newBubble : Bubble = await getReply(r)
+            return Response.json({ newBubble })
+        } else if (r.kind === 'ping') {
+            return Response.json({ email : sessionsCache.get(access_token)!.email})
+        } else {
+            throw new Error(`Unrecognised kind ${(r as any).kind}.`)
+        }
 
-        const newBubble : Bubble = await getReply(r)
-        return Response.json({ email, newBubble }, {
-            headers: {
-                "Access-Control-Allow-Origin": "*",
-            }
-        })
     } catch (err) {
         return new Response(`bad request: ${err.message}`, { status: 400 })
     }
