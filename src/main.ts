@@ -75,6 +75,6 @@ async function handle(req: Request) {
         }
 
     } catch (err) {
-        return new Response(`bad request: ${err.message}`, { status: 400 })
+        return new Response(`bad request: ${err.message}`, { status: 400, headers: CORS })
     }
 }
