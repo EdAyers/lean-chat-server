@@ -18,6 +18,12 @@ async function github(url, access_token) {
     return await r.json()
 }
 
+const CORS = {
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST",
+    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+}
+
 /** This returns the thing for the CORS preflight check.
  *  This code should be removed eventually by using a proper framework, more of a learning excercise for CORS.
  */
@@ -25,22 +31,18 @@ function handleCors(req: Request) {
     console.log("Headers:", req.headers);
     return new Response(null, {
         status: 204,
-        headers: {
-            "Access-Control-Allow-Origin": "*",
-            "Access-Control-Allow-Methods": "POST",
-            "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
-        }
+        headers: CORS
     })
 }
 
-const sessionsCache = new Map<string, Session & {email: string}>()
+const sessionsCache = new Map<string, Session & { email: string }>()
 
 async function handle(req: Request) {
     if (req.method === "OPTIONS") {
         return handleCors(req);
     }
     try {
-        const r : RequestJson = await req.json()
+        const r: RequestJson = await req.json()
         if (!r.kind) {
             throw new Error(`Accepted kinds are 'ping' and 'chat'`);
         }
@@ -49,9 +51,7 @@ async function handle(req: Request) {
             throw new Error(`Access token not provided`);
         }
         if (!sessionsCache.has(access_token)) {
-            console.log(`New session for user ${r.session.account.label}`)
             const userInfo = await github(`https://api.github.com/user`, access_token)
-            console.log(`Got response ${JSON.stringify(userInfo)}`)
             let email: string = userInfo.email
             if (!email) {
                 const emails = await github(`https://api.github.com/user/emails`, access_token)
@@ -60,16 +60,16 @@ async function handle(req: Request) {
             if (!email) {
                 throw new Error(`Failed to get an email address for user.`)
             }
-            console.log(`Got email ${email}`);
-            sessionsCache.set(access_token, {...r.session, email})
+            console.log(`New session:\n  user: ${r.session.account.label}\n  email: ${email}`);
+            sessionsCache.set(access_token, { ...r.session, email })
+            // we don't actually need your email,
+            // I am just doing this to prove to myself that it actually authenticated.
         }
-        // we don't actually need your email,
-        // I am just doing this to prove to myself that it actually authenticated.
         if (r.kind === 'chat') {
-            const newBubble : Bubble = await getReply(r)
-            return Response.json({ newBubble })
+            const newBubble: Bubble = await getReply(r)
+            return Response.json({ newBubble }, {headers: CORS})
         } else if (r.kind === 'ping') {
-            return Response.json({ email : sessionsCache.get(access_token)!.email})
+            return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
         } else {
             throw new Error(`Unrecognised kind ${(r as any).kind}.`)
         }
