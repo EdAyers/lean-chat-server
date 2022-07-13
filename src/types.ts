@@ -6,7 +6,8 @@ export interface Bubble {
 }
 
 export interface ChatRequest {
-    bubbles: Bubble[]
+    bubbles: Bubble[],
+    inputText: string,
     session: {
         id: string
         accessToken: string

@@ -1,6 +1,9 @@
 import { promptOfNlStatement, promptOfResponse, EXAMPLE_PROMPT } from "./prompting.ts";
-import { Configuration, OpenAIApi } from "openai";
+import OpenAI from "https://esm.sh/openai@3";
 import { Bubble, ChatRequest } from "./types.ts";
+
+const OpenAIApi = OpenAI.OpenAIApi
+const Configuration = OpenAI.Configuration
 
 export async function getCompletionOfPrompt(
     openai: OpenAIApi,
@@ -13,6 +16,9 @@ export async function getCompletionOfPrompt(
     const response = await openai.createCompletion({
         model, prompt, max_tokens, temperature, stop,
     })
+    if (!response.data.choices || response.data.choices.length === 0) {
+        throw new Error('OpenAI did not give any choices.')
+    }
     return response.data.choices[0].text
 }
 
@@ -30,9 +36,12 @@ export async function isSafeOfResponse(
         top_p: 0.0,
         logprobs: 10,
     })
+    if (!output.data.choices || output.data.choices.length === 0) {
+        throw new Error('OpenAI did not give any choices.')
+    }
     const result = output.data.choices[0]
-    const _token = result.text
-    const logprob = result.logprobs.top_logprobs[0]["2"]
+    const _token = result.text;
+    const logprob = result.logprobs?.top_logprobs?.[0]["2"] ?? 0
     if (result.text === "2" && logprob < threshold) {
         return true
     } else {
@@ -56,15 +65,8 @@ const OPENAI_API_KEY = Deno.env.get('OPENAI_API_KEY');
 const openai = new OpenAIApi(new Configuration({ apiKey: OPENAI_API_KEY}))
 
 export async function getReply(request : ChatRequest) : Promise<Bubble>{
-    if (request.bubbles.length === 0) {
-        throw new Error('Need at least one bubble');
-    }
-    const [inputBubble] = request.bubbles.slice(-1)
-    if (inputBubble.user === 'codex') {
-        throw new Error('Expecting last bubble in the sequence to not be a codex bubble.')
-    }
-    const inputText = inputBubble.plaintext
-    const contextBubbles = request.bubbles.slice(0, -1)
+    const inputText = request.inputText
+    const contextBubbles = request.bubbles
 
     const userid = request.session.account.id
     let prompt : string;
