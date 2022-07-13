@@ -82,7 +82,7 @@ export async function getReply(request : ChatRequest) : Promise<Bubble>{
     }
     const response = await getCompletionOfPrompt(openai, prompt, userid)
 
-    await assertSafeResponse(openai, response)
+    // await assertSafeResponse(openai, response) // [todo] re-enable safety stuff.
 
     return { user: "codex", plaintext: response + ":=", type: 'code' }
 }
