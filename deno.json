@@ -1,0 +1,13 @@
+{
+  "importMap": "./import_map.json",
+  "lint": {
+    "rules": {
+      "exclude": ["no-explicit-any" ]
+    }
+  },
+  "compilerOptions": {
+    "noImplicitAny": false,
+    "noImplicitThis": false,
+    "strictPropertyInitialization": false
+  }
+}
