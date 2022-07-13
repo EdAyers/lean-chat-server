@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
+import "https://deno.land/x/xhr@0.1.0/mod.ts";
 // import { Octokit, App } from "https://cdn.skypack.dev/octokit?dts";
 
 // const client_id = Deno.env.get('CLIENT_ID')
@@ -28,7 +29,6 @@ const CORS = {
  *  This code should be removed eventually by using a proper framework, more of a learning excercise for CORS.
  */
 function handleCors(req: Request) {
-    console.log("Headers:", req.headers);
     return new Response(null, {
         status: 204,
         headers: CORS
