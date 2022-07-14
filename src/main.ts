@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
-// import { logCall} from './database.ts'
+import { logCall} from './database.ts'
 
 serve(handle)
 
