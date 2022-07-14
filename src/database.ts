@@ -17,7 +17,9 @@ const kafka = new Kafka({
 
 export async function logCall(info: CallInfo) {
     try {
+        console.log('connecting')
         await producer.connect();
+        console.log('sending')
         await producer.send({
             topic: 'lean-chat-call',
             messages: [{
