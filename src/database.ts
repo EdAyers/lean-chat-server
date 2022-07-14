@@ -17,12 +17,12 @@ const kafka = new Kafka({
 
 export async function logCall(info: CallInfo) {
     try {
-        await connected;
+        await producer.connect();
         await producer.send({
             topic: 'lean-chat-call',
             messages: [{
                 value: JSON.stringify(info),
-                key: `${info.userId}` // idk what the key should be
+                key: `${info.userId}` // [todo] what should the key be?
             }]
         })
     } catch (err) {
@@ -31,5 +31,4 @@ export async function logCall(info: CallInfo) {
 }
 
 const producer = kafka.producer();
-const connected = producer.connect()
 
