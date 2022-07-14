@@ -1,10 +1,10 @@
 /** @format */
 
-import { format } from 'https://deno.land/std@0.110.0/node/util.ts';
+import { format } from 'https://deno.land/std@0.148.0/node/util.ts';
 import { KafkaJSLockTimeout } from '../errors.ts';
 
 const PRIVATE = {
-  LOCKED: Symbol('private:Lock:locked') as unknown as string, 
+  LOCKED: Symbol('private:Lock:locked') as unknown as string,
   TIMEOUT: Symbol('private:Lock:timeout') as unknown as string,
   WAITING: Symbol('private:Lock:waiting') as unknown as string,
   TIMEOUT_ERROR_MESSAGE: Symbol('private:Lock:timeoutErrorMessage') as unknown as string,
@@ -36,7 +36,7 @@ export default class Lock {
         : timeoutMessage;
     };
   }
-  // deno-lint-ignore require-await 
+  // deno-lint-ignore require-await
     async acquire() {
     return  new Promise((resolve: any, reject: any) => {
       if (!this[PRIVATE.LOCKED]) {
@@ -45,7 +45,7 @@ export default class Lock {
       }
 
       let timeoutId: any = null;
-      // deno-lint-ignore require-await 
+      // deno-lint-ignore require-await
       const tryToAcquire = async () => {
         if (!this[PRIVATE.LOCKED]) {
           this[PRIVATE.LOCKED] = true;
@@ -66,7 +66,7 @@ export default class Lock {
       }, this[PRIVATE.TIMEOUT]);
     });
   }
-// deno-lint-ignore require-await 
+// deno-lint-ignore require-await
   async release() {
     this[PRIVATE.LOCKED] = false;
     const waitingLock = this[PRIVATE.WAITING].values().next().value;

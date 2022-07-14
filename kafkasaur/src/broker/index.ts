@@ -8,9 +8,9 @@ import { KafkaJSNonRetriableError } from '../errors.ts';
 import apiKeys from '../protocol/requests/apiKeys.ts';
 import { SASLAuthenticator } from './saslAuthenticator/index.ts';
 import shuffle from '../utils/shuffle.ts';
-import process from 'https://deno.land/std@0.110.0/node/process.ts';
+import process from 'https://deno.land/std@0.148.0/node/process.ts';
 import Connection from '../network/connection.ts'
-import 
+import
   {Logger, ApiVersions, produceRequest, fetchRequest, joinGroupRequest, AclEntry,
   BrokerOptions, offsetCommitRequest, offsetFetchRequest, createTopicsRequest, createPartitionsRequest} from '../../index.d.ts'
 
@@ -66,7 +66,7 @@ export class Broker {
   sessionLifetime: any;
   supportAuthenticationProtocol: boolean | null;
   versions: ApiVersions | null;
- 
+
   constructor({
     connection,
     logger,
@@ -378,7 +378,7 @@ export class Broker {
    * @param {string} request.memberId The member id assigned by the group coordinator
    * @returns {Promise}
    */
-  async heartbeat({ groupId, groupGenerationId, memberId }: 
+  async heartbeat({ groupId, groupGenerationId, memberId }:
     {groupId: string, groupGenerationId: number, memberId: string} ) {
     const heartbeat = this.lookupRequest(apiKeys.Heartbeat, requests.Heartbeat);
     return await this[PRIVATE.SEND_REQUEST](
@@ -392,7 +392,7 @@ export class Broker {
    * @param {import("../protocol/coordinatorTypes").CoordinatorType} request.coordinatorType The type of coordinator to find
    * @returns {Promise}
    */
-  async findGroupCoordinator({ groupId, coordinatorType }: 
+  async findGroupCoordinator({ groupId, coordinatorType }:
     {groupId: string, coordinatorType: number}) {
     // TODO: validate groupId, mandatory
     const findCoordinator = this.lookupRequest(
@@ -499,7 +499,7 @@ export class Broker {
    *
    * @returns {Promise}
    */
-  async listOffsets({ replicaId, isolationLevel, topics }: 
+  async listOffsets({ replicaId, isolationLevel, topics }:
     { replicaId: number, isolationLevel: number, topics: any }) {
     const listOffsets = this.lookupRequest(
       apiKeys.ListOffsets,
@@ -685,7 +685,7 @@ export class Broker {
    * @param {boolean} [request.includeSynonyms=false]
    * @returns {Promise}
    */
-  async describeConfigs({ resources, includeSynonyms = false }: 
+  async describeConfigs({ resources, includeSynonyms = false }:
     { resources: any, includeSynonyms: boolean }) {
     const describeConfigs = this.lookupRequest(
       apiKeys.DescribeConfigs,
@@ -712,7 +712,7 @@ export class Broker {
    * @param {boolean} [request.validateOnly=false]
    * @returns {Promise}
    */
-  async alterConfigs({ resources, validateOnly = false }: 
+  async alterConfigs({ resources, validateOnly = false }:
     { resources: any, validateOnly: boolean}) {
     const alterConfigs = this.lookupRequest(
       apiKeys.AlterConfigs,

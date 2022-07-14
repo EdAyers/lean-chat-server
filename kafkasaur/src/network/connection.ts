@@ -1,6 +1,6 @@
 /** @format */
 import { ConnectionOptions, Logger, ISocketFactory } from '../../index.d.ts'
-import { Buffer } from 'https://deno.land/std@0.110.0/node/buffer.ts';
+import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
 import createSocket from './socket.ts';
 import createRequest from '../protocol/request.ts';
 import { Decoder } from '../protocol/decoder.ts';
@@ -320,7 +320,7 @@ export default class Connection {
    * @param {boolean} [protocol.logResponseError=true] Whether to log errors
    * @returns {Promise<data>} where data is the return of "response#parse"
    */
-  
+
   async send({
     request,
     response,
@@ -328,7 +328,7 @@ export default class Connection {
     logResponseError = true,
   }: any) {
     this.failIfNotConnected();
-    
+
     const expectResponse = !request.expectResponse || request.expectResponse();
     const sendRequest = async () => {
       const { clientId } = this;
@@ -344,7 +344,7 @@ export default class Connection {
         expectResponse,
         size: Buffer.byteLength(requestPayload.buffer),
       });
-      
+
       return new Promise((resolve: any, reject: any) => {
         try {
           this.failIfNotConnected();
