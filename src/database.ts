@@ -1,5 +1,6 @@
 
-import {Kafka as Kafka} from "https://deno.land/x/kafkasaur@v0.0.7/index.ts"
+
+import {Kafka as Kafka} from "kafkasaur"
 import { CallInfo } from "./types.ts";
 
 let k : any = undefined
@@ -8,6 +9,7 @@ function init() {
     if (k) {
         return k
     }
+
     const kafka = new Kafka({
         clientId: 'lean-chat-server',
         brokers: [Deno.env.get('CONFLUENT_BOOTSTRAP_SERVER')!],
@@ -28,7 +30,7 @@ function init() {
 
 export async function logCall(info: CallInfo) {
     try {
-        let {producer} = init()
+        const {producer} = init()
         console.log('connecting')
         await producer.connect();
         console.log('sending')

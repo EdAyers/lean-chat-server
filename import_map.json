@@ -1,5 +1,6 @@
 {
   "imports": {
-    "openai": "https://esm.sh/openai@3"
+    "openai": "https://esm.sh/openai@3",
+    "kafkasaur": "./kafkasaur/index.ts"
   }
 }
