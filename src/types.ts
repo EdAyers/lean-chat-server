@@ -15,6 +15,17 @@ export interface Session {
     scopes: string[]
 }
 
+/** All of the information that is dumped to the database. */
+export interface CallInfo {
+    bubbles: Bubble[]
+    inputText: string
+    sessionId: string
+    userId: string
+    response: Bubble
+    version?: string
+    DENO_DEPLOYMENT_ID?: string
+}
+
 export interface ChatRequest {
     kind: 'chat'
     bubbles: Bubble[],
