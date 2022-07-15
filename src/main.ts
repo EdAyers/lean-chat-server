@@ -2,6 +2,7 @@ import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
 import { logCall} from './database.ts'
+import { run } from './database_mwe.ts'
 
 serve(handle)
 
@@ -72,6 +73,7 @@ async function handle(req: Request) {
             })
             return Response.json({ newBubble }, {headers: CORS})
         } else if (r.kind === 'ping') {
+            await run()
             return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
         } else {
             throw new Error(`Unrecognised kind ${(r as any).kind}.`)

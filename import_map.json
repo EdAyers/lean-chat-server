@@ -1,16 +1,16 @@
 {
   "imports": {
     "openai": "https://esm.sh/openai@3",
-    "kafkasaur": "./kafkasaur/index.ts",
+    "kafkasaur": "https://deno.land/x/kafkasaur/index.ts",
 
-    "node/buffer": "https://deno.land/std@0.148.0/node/buffer.ts",
-    "node/process": "https://deno.land/std@0.148.0/node/process.ts",
-    "node/events": "https://deno.land/std@0.148.0/node/events.ts",
-    "testing/asserts": "https://deno.land/std@0.148.0/testing/asserts.ts",
+    "node/buffer":        "https://deno.land/std@0.148.0/node/buffer.ts",
+    "node/process":       "https://deno.land/std@0.148.0/node/process.ts",
+    "node/events":        "https://deno.land/std@0.148.0/node/events.ts",
+    "testing/asserts":    "https://deno.land/std@0.148.0/testing/asserts.ts",
     "streams/conversion": "https://deno.land/std@0.148.0/streams/conversion.ts",
-    "node/util": "https://deno.land/std@0.148.0/node/util.ts",
-    "node/crypto": "https://deno.land/std@0.148.0/node/crypto.ts",
-    "hash/sha256": "https://deno.land/std@0.148.0/hash/sha256.ts",
-    "hash/sha512": "https://deno.land/std@0.148.0/hash/sha512.ts"
+    "node/util":          "https://deno.land/std@0.148.0/node/util.ts",
+    "node/crypto":        "https://deno.land/std@0.148.0/node/crypto.ts",
+    "hash/sha256":        "https://deno.land/std@0.148.0/hash/sha256.ts",
+    "hash/sha512":        "https://deno.land/std@0.148.0/hash/sha512.ts"
   }
 }
