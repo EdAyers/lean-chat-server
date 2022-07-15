@@ -6,7 +6,7 @@ import {
   createErrorFromCode,
   failIfVersionNotSupported,
 } from '../../../error.ts';
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 
 /**
  * FindCoordinator Response (Version: 1) => throttle_time_ms error_code error_message coordinator

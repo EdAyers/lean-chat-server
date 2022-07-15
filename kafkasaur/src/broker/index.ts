@@ -8,7 +8,7 @@ import { KafkaJSNonRetriableError } from '../errors.ts';
 import apiKeys from '../protocol/requests/apiKeys.ts';
 import { SASLAuthenticator } from './saslAuthenticator/index.ts';
 import shuffle from '../utils/shuffle.ts';
-import process from 'https://deno.land/std@0.148.0/node/process.ts';
+import process from 'node/process';
 import Connection from '../network/connection.ts'
 import
   {Logger, ApiVersions, produceRequest, fetchRequest, joinGroupRequest, AclEntry,

@@ -3,8 +3,8 @@
 // /** @format */
 
 // import { KafkaJSNonRetriableError } from '../../../errors.ts';
-// import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
-// import crypto from 'https://deno.land/std@0.148.0/node/crypto.ts';
+// import { Buffer } from 'node/buffer';
+// import crypto from 'node/crypto';
 // import * as global from 'https://deno.land/std@0.148.0/node/global.ts';
 
 // const toNodeCompatible = (crypto: any) => ({

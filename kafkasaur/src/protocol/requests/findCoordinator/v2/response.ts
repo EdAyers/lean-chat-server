@@ -3,7 +3,7 @@
 import response from '../v1/response.ts';
 const decodeV1 = response.decode;
 const parse = response.parse;
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 
 /**
  * Starting in version 2, on quota violation, brokers send out responses before throttling.

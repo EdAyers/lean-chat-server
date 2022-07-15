@@ -1,6 +1,6 @@
 /** @format */
 
-import { EventEmitter } from 'https://deno.land/std@0.148.0/node/events.ts';
+import { EventEmitter } from 'node/events';
 import { SocketRequest } from './socketRequest.ts';
 import events from '../instrumentationEvents.ts';
 import { KafkaJSInvariantViolation } from '../../errors.ts';

@@ -1,6 +1,6 @@
 /** @format */
 import { ConnectionOptions, Logger, ISocketFactory } from '../../index.d.ts'
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 import createSocket from './socket.ts';
 import createRequest from '../protocol/request.ts';
 import { Decoder } from '../protocol/decoder.ts';

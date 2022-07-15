@@ -5,7 +5,7 @@ import { KafkaJSPartialMessageError } from '../../../errors.ts';
 import compression from '../../message/compression/index.ts';
 import RecordDecoder from '../record/v0/decoder.ts';
 import TimestampTypes from '../../timestampTypes.ts';
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 
 const TIMESTAMP_TYPE_FLAG_MASK = 0x8;
 const TRANSACTIONAL_FLAG_MASK = 0x10;

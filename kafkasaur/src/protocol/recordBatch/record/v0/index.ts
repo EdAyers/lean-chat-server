@@ -1,5 +1,5 @@
 /** @format */
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 import { Encoder } from '../../../encoder.ts';
 import Header from '../../header/v0/index.ts';
 

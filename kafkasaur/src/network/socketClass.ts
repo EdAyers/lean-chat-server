@@ -1,6 +1,6 @@
-import { EventEmitter } from "https://deno.land/std@0.148.0/node/events.ts";
-import { Buffer } from "https://deno.land/std@0.148.0/node/buffer.ts";
-import { iterateReader as iter } from "https://deno.land/std@0.148.0/streams/conversion.ts";
+import { EventEmitter } from "node/events";
+import { Buffer } from "node/buffer";
+import { iterateReader as iter } from "streams/conversion";
 
 interface SslOptions {
   certFile: string;

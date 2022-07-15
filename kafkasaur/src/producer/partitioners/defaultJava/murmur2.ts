@@ -4,7 +4,7 @@
  * @format
  */
 
-import { Buffer } from 'https://deno.land/std@0.148.0/node/buffer.ts';
+import { Buffer } from 'node/buffer';
 
 import Long from '../../../utils/long.ts';
 // Based on the kafka client 0.10.2 murmur2 implementation

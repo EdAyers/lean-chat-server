@@ -1,21 +1,18 @@
 /** @format */
 
 import scram from "../../protocol/sasl/scram/index.ts";
-import { Buffer } from "https://deno.land/std@0.114.0/node/buffer.ts";
-import randomBytes from "https://deno.land/std@0.114.0/node/_crypto/randomBytes.ts";
-import { pbkdf2 } from "https://deno.land/std@0.114.0/node/_crypto/pbkdf2.ts";
-import { createHash } from "https://deno.land/std@0.114.0/node/crypto.ts";
-import { HmacSha256 } from "https://deno.land/std@0.114.0/hash/sha256.ts";
+import { Buffer } from "node/buffer";
+import { createHash, pbkdf2, randomBytes, HASH_DATA } from "node/crypto";
+import { HmacSha256 } from "hash/sha256";
 import {
   HmacSha512,
   Message,
-} from "https://deno.land/std@0.114.0/hash/sha512.ts";
+} from "hash/sha512";
 
 import {
   KafkaJSNonRetriableError,
   KafkaJSSASLAuthenticationError,
 } from "../../errors.ts";
-import { HASH_DATA } from "https://deno.land/std@0.114.0/node/_crypto/types.ts";
 
 const GS2_HEADER = "n,,";
 

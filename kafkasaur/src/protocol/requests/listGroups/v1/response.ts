@@ -1,5 +1,5 @@
 /** @format */
-import {Buffer} from 'https://deno.land/std@0.148.0/node/buffer.ts'
+import {Buffer} from 'node/buffer'
 import responseV0 from '../v0/response.ts';
 
 import {Decoder }from '../../../decoder.ts';
