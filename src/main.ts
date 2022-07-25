@@ -1,6 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
+import { logCall } from './database.ts'
 
 serve(handle)
 
@@ -61,6 +62,14 @@ async function handle(req: Request) {
         }
         if (r.kind === 'chat') {
             const newBubble: Bubble = await getReply(r)
+            await logCall({
+                inputText: r.inputText,
+                bubbles: r.bubbles,
+                sessionId: r.session.id,
+                userId: r.session.account.id,
+                response: newBubble,
+                DENO_DEPLOYMENT_ID: Deno.env.get('DENO_DEPLOYMENT_ID') ?? undefined
+            })
             return Response.json({ newBubble }, {headers: CORS})
         } else if (r.kind === 'ping') {
             return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
