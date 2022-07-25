@@ -9,5 +9,8 @@
     "noImplicitAny": false,
     "noImplicitThis": false,
     "strictPropertyInitialization": false
+  },
+  "tasks": {
+    "start": "deno run --allow-env --allow-net --watch=src/ src/main.ts"
   }
 }

@@ -8,7 +8,7 @@
 import {
     DynamoDBClient,
     PutItemCommand,
-} from "https://cdn.skypack.dev/@aws-sdk/client-dynamodb?dts";
+} from "https://cdn.skypack.dev/@aws-sdk/client-dynamodb";
 import { CallInfo } from "./types.ts";
 
 // Create a client instance by providing your region information.
