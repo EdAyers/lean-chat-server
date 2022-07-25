@@ -5,10 +5,7 @@
 // APIs are similar to browser's, the same SDK works with Deno Deploy.
 // So we import the SDK along with some classes required to insert and
 // retrieve data.
-import {
-    DynamoDBClient,
-    PutItemCommand,
-} from "https://cdn.skypack.dev/@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand } from "https://esm.sh/@aws-sdk/client-dynamodb";
 import { CallInfo } from "./types.ts";
 
 // Create a client instance by providing your region information.
