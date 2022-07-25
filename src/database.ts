@@ -23,8 +23,8 @@ export async function logCall(info: CallInfo) {
     try {
         const item: any = {
             inputText: { S: info.inputText },
-            sessionId: { S: info.sessionId },
-            userId: { S: info.userId },
+            sessionId: { S: String(info.sessionId) },
+            userId: { S: String(info.userId) },
             response_plaintext: { S: info.response.plaintext },
             bubbles: {S: JSON.stringify(info.bubbles)},
             timestamp: {S: (new Date(Date.now())).toISOString()},
