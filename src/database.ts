@@ -14,8 +14,8 @@ import { CallInfo } from "./types.ts";
 const client = new DynamoDBClient({
     region: Deno.env.get("AWS_REGION"),
     credentials: {
-        accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID"),
-        secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY"),
+        accessKeyId: Deno.env.get("AWS_ACCESS_KEY_ID")!,
+        secretAccessKey: Deno.env.get("AWS_SECRET_ACCESS_KEY")!,
     },
 });
 
