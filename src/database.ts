@@ -6,7 +6,7 @@
 // So we import the SDK along with some classes required to insert and
 // retrieve data.
 import { DynamoDBClient, PutItemCommand } from "https://esm.sh/@aws-sdk/client-dynamodb";
-import { CallInfo } from "./types.ts";
+import { CallInfo, RatingRequest } from "./types.ts";
 
 // Create a client instance by providing your region information.
 // The credentials are obtained from environment variables which
@@ -25,10 +25,10 @@ export async function logCall(info: CallInfo) {
             inputText: { S: info.inputText },
             sessionId: { S: String(info.sessionId) },
             userId: { S: String(info.userId) },
+            id: {S: String(info.responseId)},
             response_plaintext: { S: info.response.plaintext },
             bubbles: {S: JSON.stringify(info.bubbles)},
             timestamp: {S: (new Date(Date.now())).toISOString()},
-            id: {S: crypto.randomUUID()}
         }
         if (info.DENO_DEPLOYMENT_ID) {
             item.DENO_DEPLOYMENT_ID = { S: info.DENO_DEPLOYMENT_ID }
@@ -47,3 +47,39 @@ export async function logCall(info: CallInfo) {
         console.error(error)
     }
   }
+
+export async function logRating(info: RatingRequest) {
+    if (info.responseId === undefined) {
+        throw new Error(`Expected responseId field.`)
+    }
+    const item : any = {
+        userId: {S: String(info.session.account.id)},
+        id: {S: info.responseId},
+    }
+    if ((info.comment === undefined) && (info.val === undefined)) {
+        throw new Error('A rating needs either a comment or val field.')
+    }
+    if (info.comment) {
+        item.comment = {S: info.comment}
+    }
+    if (info.val !== undefined) {
+        if (![1, 0, -1].includes(info.val)) {
+            throw new Error(`val field must be 1, 0, or -1`)
+        }
+        item.val = {N: info.val}
+    }
+    try {
+        const result = await client.send(
+            new PutItemCommand({
+                TableName: 'lean-chat-rating',
+                Item: item
+            })
+        )
+        const status = result.$metadata.httpStatusCode
+        if (status !== 200) {
+            throw new Error(`Dynamo returned status ${status}`)
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}

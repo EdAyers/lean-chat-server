@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
-import { logCall } from './database.ts'
+import { logCall, logRating } from './database.ts'
 
 serve(handle)
 
@@ -62,17 +62,23 @@ async function handle(req: Request) {
         }
         if (r.kind === 'chat') {
             const newBubble: Bubble = await getReply(r)
+            const responseId = crypto.randomUUID()
+            newBubble.id = responseId
             await logCall({
                 inputText: r.inputText,
                 bubbles: r.bubbles,
                 sessionId: r.session.id,
                 userId: r.session.account.id,
+                responseId,
                 response: newBubble,
                 DENO_DEPLOYMENT_ID: Deno.env.get('DENO_DEPLOYMENT_ID') ?? undefined
-            })
+            });
             return Response.json({ newBubble }, {headers: CORS})
         } else if (r.kind === 'ping') {
             return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
+        } else if (r.kind === 'rating') {
+            await logRating(r)
+            return Response.json({ message: 'thanks for your feedback!' }, {headers: CORS})
         } else {
             throw new Error(`Unrecognised kind ${(r as any).kind}.`)
         }
