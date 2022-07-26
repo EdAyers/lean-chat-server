@@ -22,13 +22,14 @@ const client = new DynamoDBClient({
 export async function logCall(info: CallInfo) {
     try {
         const item: any = {
+            kind: { S: 'chat' },
             inputText: { S: info.inputText },
             sessionId: { S: String(info.sessionId) },
             userId: { S: String(info.userId) },
-            id: {S: String(info.responseId)},
+            id: { S: String(info.responseId) },
             response_plaintext: { S: info.response.plaintext },
-            bubbles: {S: JSON.stringify(info.bubbles)},
-            timestamp: {S: (new Date(Date.now())).toISOString()},
+            bubbles: { S: JSON.stringify(info.bubbles) },
+            timestamp: { S: (new Date(Date.now())).toISOString() },
         }
         if (info.DENO_DEPLOYMENT_ID) {
             item.DENO_DEPLOYMENT_ID = { S: info.DENO_DEPLOYMENT_ID }
@@ -47,32 +48,36 @@ export async function logCall(info: CallInfo) {
         console.error('error in logCall')
         console.error(error)
     }
-  }
+}
 
 export async function logRating(info: RatingRequest) {
     if (info.responseId === undefined) {
         throw new Error(`Expected responseId field.`)
     }
-    const item : any = {
-        userId: {S: String(info.session.account.id)},
-        id: {S: String(info.responseId)},
+    const id = crypto.randomUUID()
+    const item: any = {
+        kind: { S: 'rating' },
+        userId: { S: String(info.session.account.id) },
+        responseId: { S: String(info.responseId) },
+        id: { S: String(id) },
+        timestamp: { S: (new Date(Date.now())).toISOString() },
     }
     if ((info.comment === undefined) && (info.val === undefined)) {
         throw new Error('A rating needs either a comment or val field.')
     }
     if (info.comment !== undefined) {
-        item.comment = {S: info.comment}
+        item.comment = { S: info.comment }
     }
     if (info.val !== undefined) {
         if (![1, 0, -1].includes(info.val)) {
             throw new Error(`val field must be 1, 0, or -1`)
         }
-        item.val = {N: String(info.val)}
+        item.val = { N: String(info.val) }
     }
     try {
         const result = await client.send(
             new PutItemCommand({
-                TableName: 'lean-chat-rating',
+                TableName: 'lean-chat',
                 Item: item
             })
         )
