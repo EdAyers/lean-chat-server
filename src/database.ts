@@ -67,7 +67,7 @@ export async function logRating(info: RatingRequest) {
         if (![1, 0, -1].includes(info.val)) {
             throw new Error(`val field must be 1, 0, or -1`)
         }
-        item.val = {N: Number(info.val)}
+        item.val = {N: String(info.val)}
     }
     try {
         const result = await client.send(
