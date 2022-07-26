@@ -44,6 +44,7 @@ export async function logCall(info: CallInfo) {
             throw new Error(`Dynamo returned status ${status}`)
         }
     } catch (error) {
+        console.error('error in logCall')
         console.error(error)
     }
   }
@@ -54,19 +55,19 @@ export async function logRating(info: RatingRequest) {
     }
     const item : any = {
         userId: {S: String(info.session.account.id)},
-        id: {S: info.responseId},
+        id: {S: String(info.responseId)},
     }
     if ((info.comment === undefined) && (info.val === undefined)) {
         throw new Error('A rating needs either a comment or val field.')
     }
-    if (info.comment) {
+    if (info.comment !== undefined) {
         item.comment = {S: info.comment}
     }
     if (info.val !== undefined) {
         if (![1, 0, -1].includes(info.val)) {
             throw new Error(`val field must be 1, 0, or -1`)
         }
-        item.val = {N: info.val}
+        item.val = {N: Number(info.val)}
     }
     try {
         const result = await client.send(
