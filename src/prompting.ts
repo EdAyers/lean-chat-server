@@ -8,7 +8,7 @@ theorem sum_add_square_sub_square_eq_sum_square (n : ℕ) (x y : euclidean_space
 
 Natural language version: \"If $x$ is an element of infinite order in $G$, prove that the elements $x^n$, $n\\in\\mathbb{Z}$ are all distinct.\" Translate the natural language version to a Lean mathlib version:
 theorem distinct_powers_of_infinite_order_element (G : Type*) [group G] (x : G)
-  (hx : x ≠ 1) (hx_inf : ∀ n : ℕ, x ^ n ≠ 1) :
+  (hx_inf : ∀ n : ℕ, x ^ n ≠ 1) :
   ∀ m n : ℤ, m ≠ n → x ^ m ≠ x ^ n :=
 
 Natural language version: \"Let $X$ be a topological space; let $A$ be a subset of $X$. Suppose that for each $x\\in A$ there is an open set $U$ containing $x$ such that $U\\subset A$. Show that $A$ is open in $X$.\" Translate the natural language version to a Lean mathlib version:
