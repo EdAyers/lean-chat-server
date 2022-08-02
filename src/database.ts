@@ -93,11 +93,15 @@ export async function logRating(info: RatingRequest) {
 
 interface DocGenRating {
     digest: string;
-    rating: 'yes' | 'no'
+    rate: 'yes' | 'no'
 }
 
 export async function logDocGenRating(info: DocGenRating) {
     try {
+        const val = {yes: 1, no: -1}[info.rate]
+        if (!val) {
+            throw new Error('invalid value for info.rate.')
+        }
         const result = await client.send(
             new PutItemCommand({
                 TableName: 'lean-chat',
@@ -105,7 +109,7 @@ export async function logDocGenRating(info: DocGenRating) {
                     id: {S: String(info.digest)},
                     kind: {S: 'docgen-rating'},
                     timestamp: { S: (new Date(Date.now())).toISOString() },
-                    rating: {S: String(info.rating)}
+                    val: {N: String(val)}
                 }
             })
         )

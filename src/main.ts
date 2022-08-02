@@ -1,7 +1,7 @@
 import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
-import { logCall, logRating } from './database.ts'
+import { logCall, logDocGenRating, logRating } from './database.ts'
 
 serve(handle)
 
@@ -20,6 +20,14 @@ const CORS = {
     "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
 }
 
+/** CORS headers for docgen. */
+const CORS_DOCGEN = {
+    // "Access-Control-Allow-Origin": "leanprover-community.github.io",
+    "Access-Control-Allow-Origin": "*",
+    "Access-Control-Allow-Methods": "POST",
+    "Access-Control-Allow-Headers": "Origin, X-Requested-With, Content-Type, Accept",
+}
+
 /** This returns the thing for the CORS preflight check.
  *  This code should be removed eventually by using a proper webserver framework.
  */
@@ -33,6 +41,21 @@ function handleCors(_req: Request) {
 const sessionsCache = new Map<string, Session & { email: string }>()
 
 async function handle(req: Request) {
+    const url = new URL(req.url)
+    if (url.pathname === '/doc-gen') {
+        const digest = url.searchParams.get('digest')
+        const rate = url.searchParams.get('rate')
+        if (!digest || !rate || !['yes', 'no'].includes(rate)) {
+            return new Response('digest and rate searchParams must be present and rate must be "yes" or "no".', {status: 400, headers: CORS_DOCGEN})
+        }
+
+        await logDocGenRating({
+            digest,
+            rate: rate as any
+        })
+        return new Response(null, {status: 204, headers: CORS_DOCGEN})
+    }
+
     if (req.method === "OPTIONS") {
         return handleCors(req);
     }
