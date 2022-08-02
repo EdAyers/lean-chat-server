@@ -1,9 +1,20 @@
-import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
+import { ConnInfo, serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
 import { logCall, logDocGenRating, logRating } from './database.ts'
 
 serve(handle)
+
+// https://stackoverflow.com/questions/71008150/get-remote-client-ip-address-in-deno
+function getRemoteAddress(connInfo: ConnInfo): Deno.NetAddr {
+    function assertIsNetAddr(addr: Deno.Addr): asserts addr is Deno.NetAddr {
+        if (!['tcp', 'udp'].includes(addr.transport)) {
+            throw new Error('Not a network address');
+        }
+    }
+    assertIsNetAddr(connInfo.remoteAddr);
+    return connInfo.remoteAddr;
+}
 
 async function github(url, access_token) {
     const r = await fetch(url, {
@@ -40,20 +51,22 @@ function handleCors(_req: Request) {
 
 const sessionsCache = new Map<string, Session & { email: string }>()
 
-async function handle(req: Request) {
+async function handle(req: Request, connInfo: ConnInfo) {
     const url = new URL(req.url)
+    const ip = req.headers['x-forwarded-for'] || getRemoteAddress(connInfo)
     if (url.pathname === '/doc-gen') {
         const digest = url.searchParams.get('digest')
         const rate = url.searchParams.get('rate')
         if (!digest || !rate || !['yes', 'no'].includes(rate)) {
-            return new Response('digest and rate searchParams must be present and rate must be "yes" or "no".', {status: 400, headers: CORS_DOCGEN})
+            return new Response('digest and rate searchParams must be present and rate must be "yes" or "no".', { status: 400, headers: CORS_DOCGEN })
         }
 
         await logDocGenRating({
             digest,
+            ip,
             rate: rate as any
         })
-        return new Response(null, {status: 204, headers: CORS_DOCGEN})
+        return new Response(null, { status: 204, headers: CORS_DOCGEN })
     }
 
     if (req.method === "OPTIONS") {
@@ -96,12 +109,12 @@ async function handle(req: Request) {
                 response: newBubble,
                 DENO_DEPLOYMENT_ID: Deno.env.get('DENO_DEPLOYMENT_ID') ?? undefined
             });
-            return Response.json({ newBubble }, {headers: CORS})
+            return Response.json({ newBubble }, { headers: CORS })
         } else if (r.kind === 'ping') {
-            return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
+            return Response.json({ email: sessionsCache.get(access_token)!.email }, { headers: CORS })
         } else if (r.kind === 'rating') {
             await logRating(r)
-            return Response.json({ message: 'thanks for your feedback!' }, {headers: CORS})
+            return Response.json({ message: 'thanks for your feedback!' }, { headers: CORS })
         } else {
             throw new Error(`Unrecognised kind ${(r as any).kind}.`)
         }

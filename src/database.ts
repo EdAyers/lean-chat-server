@@ -93,7 +93,8 @@ export async function logRating(info: RatingRequest) {
 
 interface DocGenRating {
     digest: string;
-    rate: 'yes' | 'no'
+    rate: 'yes' | 'no';
+    ip: string
 }
 
 export async function logDocGenRating(info: DocGenRating) {
@@ -109,7 +110,8 @@ export async function logDocGenRating(info: DocGenRating) {
                     id: {S: String(info.digest)},
                     kind: {S: 'docgen-rating'},
                     timestamp: { S: (new Date(Date.now())).toISOString() },
-                    val: {N: String(val)}
+                    val: {N: String(val)},
+                    ip: {S: String(info.ip)},
                 }
             })
         )
