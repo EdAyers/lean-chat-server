@@ -89,3 +89,31 @@ export async function logRating(info: RatingRequest) {
         console.error(error)
     }
 }
+
+
+interface DocGenRating {
+    digest: string;
+    rating: 'yes' | 'no'
+}
+
+export async function logDocGenRating(info: DocGenRating) {
+    try {
+        const result = await client.send(
+            new PutItemCommand({
+                TableName: 'lean-chat',
+                Item: {
+                    id: {S: String(info.digest)},
+                    kind: {S: 'docgen-rating'},
+                    timestamp: { S: (new Date(Date.now())).toISOString() },
+                    rating: {S: String(info.rating)}
+                }
+            })
+        )
+        const status = result.$metadata.httpStatusCode
+        if (status !== 200) {
+            throw new Error(`Dynamo returned status ${status}`)
+        }
+    } catch (error) {
+        console.error(error)
+    }
+}
