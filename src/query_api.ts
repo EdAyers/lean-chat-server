@@ -49,7 +49,7 @@ export async function assertSafeResponse(
 
     if (result.flagged) {
         const badness = Object.getOwnPropertyNames(result.categories).filter(k => Boolean(result.categories[k]))
-        throw new Error(`Codex produced content flagged as ${badness.join(", ")}`)
+        throw new Error(`Content flagged as ${badness.join(", ")}`)
     }
 }
 
