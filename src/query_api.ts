@@ -27,32 +27,44 @@ export async function getCompletionOfPrompt(
 }
 
 export async function assertSafeResponse(
-    openai: oai.OpenAIApi,
-    response: string
+    response : string
 ) {
-    const threshold = -0.355;
-    const prompt = `<|endoftext|>${response}\n--\nLabel:`;
-    const output = await openai.createCompletion({
-        model: "content-filter-alpha",
-        prompt: prompt,
-        max_tokens: 1,
-        temperature: 0.0,
-        top_p: 0.0,
-        logprobs: 10,
-    })
-    if (!output.data.choices || output.data.choices.length === 0) {
-        throw new Error('OpenAI did not give any choices.')
+    const myHeaders = new Headers()
+    myHeaders.append('Content-Type', 'application/json')
+    myHeaders.append('Authorization', 'Bearer ' + OPENAI_API_KEY)
+
+    const body = {input: response}
+
+    const myInit = {
+        method: 'POST',
+        body: JSON.stringify(body),
+        headers: myHeaders
     }
-    const result = output.data.choices[0]
-    const _token = result.text;
-    const logprob = result.logprobs?.top_logprobs?.[0]["2"] ?? 0
-    if (result.text !== "2") {
-        throw new Error(`Codex produced unsafe output: content-filter-alpha gave text ${result.text}`)
-    }
-    if (logprob >= threshold) {
-        throw new Error(`Codex produced logprob of ${logprob} but needs to be below ${threshold}`)
+
+    const myRequest = new Request('https://api.openai.com/v1/moderations')
+
+    const resp = await fetch(myRequest, myInit)
+    const resp_json : OpenAIModeration = await resp.json()
+    const result = resp_json.results[0]
+
+    if (result.flagged) {
+        const badness = Object.getOwnPropertyNames(result.categories).filter(k => Boolean(result.categories[k]))
+        throw new Error(`Codex produced content flagged as ${badness.join(", ")}`)
     }
 }
+
+type OpenAIModerationCategories = "hate" | "hate/threatening" | "self-harm" | "sexual" | "sexual/minors" | "violence" | "violence/graphic"
+
+interface OpenAIModeration {
+    id: string;
+    model: string;
+    results: [{
+        categories: {[cat in OpenAIModerationCategories]: 0 | 1 | boolean};
+        category_scores: {[cat in OpenAIModerationCategories]: number};
+        flagged: 0 | 1 | boolean;
+    }]
+}
+
 
 export async function runExample(key: string) {
     const openai = new oai.OpenAIApi(new Configuration({ apiKey: key }))
@@ -82,7 +94,7 @@ export async function getReply(request: ChatRequest): Promise<Bubble> {
     }
     const response = await getCompletionOfPrompt(openai, prompt, userid)
 
-    // await assertSafeResponse(openai, response) // [todo] re-enable safety stuff.
+    await assertSafeResponse(response)
 
     return { user: "codex", plaintext: response + ":=", type: 'code' }
 }
