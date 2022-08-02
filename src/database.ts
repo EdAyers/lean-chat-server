@@ -116,6 +116,8 @@ export async function logDocGenRating(info: DocGenRating) {
         const status = result.$metadata.httpStatusCode
         if (status !== 200) {
             throw new Error(`Dynamo returned status ${status}`)
+        } else {
+            console.log(`digest: ${info.digest}  rate: ${info.rate}`)
         }
     } catch (error) {
         console.error(error)
