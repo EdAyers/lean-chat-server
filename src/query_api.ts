@@ -84,6 +84,8 @@ export async function getReply(request: ChatRequest): Promise<Bubble> {
     const inputText = request.inputText
     const contextBubbles = request.bubbles
 
+    await assertSafeResponse(inputText)
+
     const userid = request.session.account.id
     let prompt: string;
     if (contextBubbles.length !== 0) {
