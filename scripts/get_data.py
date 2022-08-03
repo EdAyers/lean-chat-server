@@ -94,7 +94,10 @@ class ChatRating:
 
 @dataclass
 class DocgenRating:
+    # digest is the md5 hash of the informal_text that produced the rating
     digest: str
+    decl: str
+    statement: str
     id: str
     val: Literal[1, -1]
     edit: Optional[str]
@@ -107,6 +110,8 @@ class DocgenRating:
         return cls(
             id = item['id'],
             digest = item['digest'],
+            statement = item['statement'],
+            decl = item['decl'],
             val = val,
             edit = item.get('edit', None),
             timestamp=dateutil.parser.isoparse(item['timestamp']))

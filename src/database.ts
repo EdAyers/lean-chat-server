@@ -94,6 +94,8 @@ interface DocGenRating {
     digest: string;
     rate: 'yes' | 'no'
     edit?: string;
+    decl: string;
+    statement: string;
 }
 
 export async function logDocGenRating(info: DocGenRating) {
@@ -108,7 +110,9 @@ export async function logDocGenRating(info: DocGenRating) {
             digest: {S: String(info.digest)},
             kind: { S: 'docgen-rating' },
             timestamp: { S: (new Date(Date.now())).toISOString() },
-            val: { N: String(val) }
+            val: { N: String(val) },
+            decl: {S: info.decl},
+            statement: {S: info.statement}
         }
         if (info.edit) {
             item.edit = { S: String(info.edit) }
@@ -123,7 +127,7 @@ export async function logDocGenRating(info: DocGenRating) {
         if (status !== 200) {
             throw new Error(`Dynamo returned status ${status}`)
         } else {
-            console.log(`digest: ${info.digest}  rate: ${info.rate}\nedit: ${info.edit}`)
+            console.log(`decl: ${info.decl}  rate: ${info.rate}\nedit: ${info.edit ?? 'none'}`)
         }
     } catch (error) {
         console.error(error)

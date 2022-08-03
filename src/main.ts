@@ -53,6 +53,8 @@ async function handle(req: Request) {
             digest,
             rate: rate as any,
             edit: url.searchParams.get('edit') ?? undefined,
+            statement: url.searchParams.get('statement')!,
+            decl: url.searchParams.get('decl')!,
         })
         return new Response(null, {status: 204, headers: CORS_DOCGEN})
     }
