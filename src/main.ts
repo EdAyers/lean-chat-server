@@ -51,7 +51,8 @@ async function handle(req: Request) {
 
         await logDocGenRating({
             digest,
-            rate: rate as any
+            rate: rate as any,
+            edit: url.searchParams.get('edit') ?? undefined,
         })
         return new Response(null, {status: 204, headers: CORS_DOCGEN})
     }

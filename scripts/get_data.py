@@ -69,7 +69,8 @@ class ChatResponse:
 class ChatRating:
     # the id of the rating itself (shouldn't need this)
     id: str
-    val: Literal[1, -1]
+    val: Optional[Literal[1, -1]]
+    comment: Optional[str]
     # github id of the user that rated it (use this to spot double counted ratings?)
     user_id: str
 
@@ -78,9 +79,13 @@ class ChatRating:
     response_id: str
     @classmethod
     def of_item(cls, item):
+        val : Any = item.get('val', None)
+        if val is not None:
+            val = int(val)
         return cls(
             id= item['id'],
-            val = item['val'],
+            val = val,
+            comment = item.get('comment', None),
             user_id = item['userId'],
             timestamp = dateutil.parser.isoparse(item['timestamp']),
             response_id = item['responseId']
@@ -91,12 +96,17 @@ class ChatRating:
 class DocgenRating:
     digest: str
     val: Literal[1, -1]
+    edit: Optional[str]
     timestamp: datetime.datetime
     @classmethod
     def of_item(cls, item):
+        val : Any = item.get('val', None)
+        if val is not None:
+            val = int(val)
         return cls(
             digest = item['id'],
-            val = item['val'],
+            val = val,
+            edit = item.get('edit', None),
             timestamp=dateutil.parser.isoparse(item['timestamp']))
 
 def get_chat_ratings():

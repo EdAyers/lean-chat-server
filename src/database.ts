@@ -5,7 +5,7 @@
 // APIs are similar to browser's, the same SDK works with Deno Deploy.
 // So we import the SDK along with some classes required to insert and
 // retrieve data.
-import { DynamoDBClient, PutItemCommand } from "https://esm.sh/@aws-sdk/client-dynamodb";
+import { DynamoDBClient, PutItemCommand } from "https://esm.sh/@aws-sdk/client-dynamodb@3.131.0";
 import { CallInfo, RatingRequest } from "./types.ts";
 
 // Create a client instance by providing your region information.
@@ -90,27 +90,32 @@ export async function logRating(info: RatingRequest) {
     }
 }
 
-
 interface DocGenRating {
     digest: string;
     rate: 'yes' | 'no'
+    edit?: string;
 }
 
 export async function logDocGenRating(info: DocGenRating) {
     try {
-        const val = {yes: 1, no: -1}[info.rate]
+        const val = { yes: 1, no: -1 }[info.rate]
         if (!val) {
             throw new Error('invalid value for info.rate.')
+        }
+        const item: any = {
+            id: { S: String(info.digest) },
+            kind: { S: 'docgen-rating' },
+            timestamp: { S: (new Date(Date.now())).toISOString() },
+            val: { N: String(val) }
+        }
+        if (info.edit) {
+            console.log(`Got edit: ${info.edit}`)
+            item.edit = { S: String(info.edit) }
         }
         const result = await client.send(
             new PutItemCommand({
                 TableName: 'lean-chat',
-                Item: {
-                    id: {S: String(info.digest)},
-                    kind: {S: 'docgen-rating'},
-                    timestamp: { S: (new Date(Date.now())).toISOString() },
-                    val: {N: String(val)}
-                }
+                Item: item
             })
         )
         const status = result.$metadata.httpStatusCode
