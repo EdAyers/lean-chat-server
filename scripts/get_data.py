@@ -99,7 +99,7 @@ class DocgenRating:
     decl: str
     statement: str
     id: str
-    val: Literal[1, -1]
+    val: Literal[1, -1, 0]
     edit: Optional[str]
     timestamp: datetime.datetime
     @classmethod
