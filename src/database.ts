@@ -99,17 +99,18 @@ interface DocGenRating {
 export async function logDocGenRating(info: DocGenRating) {
     try {
         const val = { yes: 1, no: -1 }[info.rate]
+        const id = crypto.randomUUID()
         if (!val) {
             throw new Error('invalid value for info.rate.')
         }
         const item: any = {
-            id: { S: String(info.digest) },
+            id: { S: String(id) },
+            digest: {S: String(info.digest)},
             kind: { S: 'docgen-rating' },
             timestamp: { S: (new Date(Date.now())).toISOString() },
             val: { N: String(val) }
         }
         if (info.edit) {
-            console.log(`Got edit: ${info.edit}`)
             item.edit = { S: String(info.edit) }
         }
         const result = await client.send(
@@ -122,7 +123,7 @@ export async function logDocGenRating(info: DocGenRating) {
         if (status !== 200) {
             throw new Error(`Dynamo returned status ${status}`)
         } else {
-            console.log(`digest: ${info.digest}  rate: ${info.rate}`)
+            console.log(`digest: ${info.digest}  rate: ${info.rate}\nedit: ${info.edit}`)
         }
     } catch (error) {
         console.error(error)

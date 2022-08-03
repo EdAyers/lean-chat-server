@@ -95,6 +95,7 @@ class ChatRating:
 @dataclass
 class DocgenRating:
     digest: str
+    id: str
     val: Literal[1, -1]
     edit: Optional[str]
     timestamp: datetime.datetime
@@ -104,7 +105,8 @@ class DocgenRating:
         if val is not None:
             val = int(val)
         return cls(
-            digest = item['id'],
+            id = item['id'],
+            digest = item['digest'],
             val = val,
             edit = item.get('edit', None),
             timestamp=dateutil.parser.isoparse(item['timestamp']))
