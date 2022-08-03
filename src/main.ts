@@ -2,7 +2,6 @@ import { serve } from "https://deno.land/std@0.142.0/http/server.ts";
 import { getReply } from "./query_api.ts";
 import { Bubble, RequestJson, Session } from './types.ts'
 import { logCall, logDocGenRating, logRating } from './database.ts'
-
 serve(handle)
 
 async function github(url, access_token) {
@@ -43,16 +42,21 @@ const sessionsCache = new Map<string, Session & { email: string }>()
 async function handle(req: Request) {
     const url = new URL(req.url)
     if (url.pathname === '/doc-gen') {
-        const digest = url.searchParams.get('digest')
-        const rate = url.searchParams.get('rate')
-        if (!digest || !rate || !['yes', 'no'].includes(rate)) {
-            return new Response('digest and rate searchParams must be present and rate must be "yes" or "no".', {status: 400, headers: CORS_DOCGEN})
+        // validation
+        const required = ['decl', 'statement', 'digest']
+        for (const r of required) {
+            if (!url.searchParams.has(r)) {
+                return new Response(`Missing param ${r}`, {status: 400, headers: CORS_DOCGEN})
+            }
+        }
+        if (!url.searchParams.has('rate') && !url.searchParams.has('edit')) {
+            return new Response(`One param of 'rate' or 'edit' is required.`, {status: 400, headers: CORS_DOCGEN})
         }
 
         await logDocGenRating({
-            digest,
-            rate: rate as any,
-            edit: url.searchParams.get('edit') ?? undefined,
+            digest: url.searchParams.get('digest')!,
+            rate: url.searchParams.get('rate') as any,
+            edit: url.searchParams.get('edit')!,
             statement: url.searchParams.get('statement')!,
             decl: url.searchParams.get('decl')!,
         })

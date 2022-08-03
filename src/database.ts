@@ -92,7 +92,7 @@ export async function logRating(info: RatingRequest) {
 
 interface DocGenRating {
     digest: string;
-    rate: 'yes' | 'no'
+    rate?: 'yes' | 'no'
     edit?: string;
     decl: string;
     statement: string;
@@ -100,11 +100,8 @@ interface DocGenRating {
 
 export async function logDocGenRating(info: DocGenRating) {
     try {
-        const val = { yes: 1, no: -1 }[info.rate]
+        const val = info.rate ? { yes: 1, no: -1 }[info.rate] : 0
         const id = crypto.randomUUID()
-        if (!val) {
-            throw new Error('invalid value for info.rate.')
-        }
         const item: any = {
             id: { S: String(id) },
             digest: {S: String(info.digest)},
