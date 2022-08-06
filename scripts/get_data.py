@@ -136,5 +136,7 @@ def get_docgen_ratings():
     return items
 
 if __name__ == '__main__':
-    for chat in get_chats():
-        print(chat)
+    chats = get_chats()
+    print(f"Found {len(chats)} chats.")
+    for chat in chats:
+        print(chat.input_text + "\n")
