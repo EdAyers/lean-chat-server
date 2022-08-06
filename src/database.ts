@@ -24,12 +24,14 @@ export async function logCall(info: CallInfo) {
         const item: any = {
             kind: { S: 'chat' },
             inputText: { S: info.inputText },
-            sessionId: { S: String(info.sessionId) },
             userId: { S: String(info.userId) },
             id: { S: String(info.responseId) },
             response_plaintext: { S: info.response.plaintext },
             bubbles: { S: JSON.stringify(info.bubbles) },
             timestamp: { S: (new Date(Date.now())).toISOString() },
+        }
+        if (info.sessionId) {
+            item.sessionId =  { S: String(info.sessionId) };
         }
         if (info.DENO_DEPLOYMENT_ID) {
             item.DENO_DEPLOYMENT_ID = { S: info.DENO_DEPLOYMENT_ID }
