@@ -37,7 +37,7 @@ function handleCors(_req: Request) {
     })
 }
 
-const sessionsCache = new Map<string, Session & { email: string }>()
+const sessionsCache = new Map<string, { email: string, id: string, login: string }>()
 
 async function handle(req: Request) {
     const url = new URL(req.url)
@@ -78,6 +78,10 @@ async function handle(req: Request) {
         if (!sessionsCache.has(access_token)) {
             const userInfo = await github(`https://api.github.com/user`, access_token)
             let email: string = userInfo.email
+            const id: string = userInfo.id
+            if (id !== r.session.account.id) {
+                console.warn(`Request id ${r.session.account.id} does not match actual id ${id}`);
+            }
             if (!email) {
                 const emails = await github(`https://api.github.com/user/emails`, access_token)
                 email = emails.find(e => e.primary).email
@@ -85,11 +89,10 @@ async function handle(req: Request) {
             if (!email) {
                 throw new Error(`Failed to get an email address for user.`)
             }
-            console.log(`New session:\n  user: ${r.session.account.label}\n  email: ${email}`);
-            sessionsCache.set(access_token, { ...r.session, email })
-            // we don't actually need your email,
-            // I am just doing this to prove to myself that it actually authenticated.
+            console.log(`New session:\n  user: ${userInfo.login}\n  email: ${email}`);
+            sessionsCache.set(access_token, { email, id, login: userInfo.login })
         }
+        const user = sessionsCache.get(access_token)!
         if (r.kind === 'chat') {
             const newBubble: Bubble = await getReply(r)
             const responseId = crypto.randomUUID()
@@ -98,7 +101,7 @@ async function handle(req: Request) {
                 inputText: r.inputText,
                 bubbles: r.bubbles,
                 sessionId: r.session.id,
-                userId: r.session.account.id,
+                userId: user.id,
                 responseId,
                 response: newBubble,
                 DENO_DEPLOYMENT_ID: Deno.env.get('DENO_DEPLOYMENT_ID') ?? undefined

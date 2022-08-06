@@ -21,7 +21,7 @@ export interface Session {
 export interface CallInfo {
     bubbles: Bubble[]
     inputText: string
-    sessionId: string
+    sessionId?: string
     userId: string
     responseId: string
     response: Bubble
