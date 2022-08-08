@@ -110,7 +110,7 @@ async function handle(req: Request) {
         } else if (r.kind === 'ping') {
             return Response.json({ email: sessionsCache.get(access_token)!.email }, {headers: CORS})
         } else if (r.kind === 'rating') {
-            await logRating(r)
+            await logRating({...r, user})
             return Response.json({ message: 'thanks for your feedback!' }, {headers: CORS})
         } else {
             throw new Error(`Unrecognised kind ${(r as any).kind}.`)

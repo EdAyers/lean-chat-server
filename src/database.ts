@@ -19,74 +19,97 @@ const client = new DynamoDBClient({
     },
 });
 
+/** Send a POJO to a DynamoDB attribute value. */
+function toPutItem(v: any) : any {
+    if (typeof v === 'string') {
+        return {S: v}
+    } else if (typeof v === 'number') {
+        return {N: String(v)}
+    } else if (typeof v === 'boolean') {
+        return {B: v}
+    } else if (v instanceof Date) {
+        return {S: v.toISOString()}
+    } else if (v instanceof Array) {
+        return {L: v.map(toPutItem)}
+    } else if (v?.constructor === Object) {
+        const r : any = {}
+        for (const k of Object.getOwnPropertyNames(v)) {
+            const vk = v[k]
+            if (vk === undefined || vk === null) {
+                continue
+            }
+            r[k] = toPutItem(vk)
+        }
+        return {M: r}
+    } else {
+        throw new Error(`Unsupported value ${v} : ${typeof v}.`)
+    }
+}
+
+async function put(row : any, tablename = 'lean-chat') : Promise<void> {
+    const item : any = {}
+    for (const k of Object.getOwnPropertyNames(row)) {
+        const v = row[k]
+        if (v === undefined || v === null) {
+            continue
+        }
+        item[k] = toPutItem(v)
+    }
+    if (!item.timestamp) {
+        item.timestamp = toPutItem(new Date(Date.now()))
+    }
+    const result = await client.send(new PutItemCommand({
+        TableName: tablename,
+        Item: item
+    }));
+    const status = result.$metadata.httpStatusCode;
+    if (status !== 200) {
+        throw new Error(`Dynamo returned status ${status}`);
+    }
+}
+
 export async function logCall(info: CallInfo) {
     try {
-        const item: any = {
-            kind: { S: 'chat' },
-            inputText: { S: info.inputText },
-            userId: { S: String(info.userId) },
-            id: { S: String(info.responseId) },
-            response_plaintext: { S: info.response.plaintext },
-            bubbles: { S: JSON.stringify(info.bubbles) },
-            timestamp: { S: (new Date(Date.now())).toISOString() },
+        const row = {
+            kind: 'chat',
+            inputText: info.inputText,
+            userId: String(info.userId),
+            id: info.responseId,
+            response_plaintext: info.response.plaintext,
+            bubbles: JSON.stringify(info.bubbles),
+            sessionId: info.sessionId,
+            DENO_DEPLOYMENT_ID: info.DENO_DEPLOYMENT_ID,
         }
-        if (info.sessionId) {
-            item.sessionId =  { S: String(info.sessionId) };
-        }
-        if (info.DENO_DEPLOYMENT_ID) {
-            item.DENO_DEPLOYMENT_ID = { S: info.DENO_DEPLOYMENT_ID }
-        }
-        const result = await client.send(
-            new PutItemCommand({
-                TableName: 'lean-chat',
-                Item: item,
-            })
-        )
-        const status = result.$metadata.httpStatusCode
-        if (status !== 200) {
-            throw new Error(`Dynamo returned status ${status}`)
-        }
+        await put(row)
     } catch (error) {
         console.error('error in logCall')
         console.error(error)
     }
 }
 
-export async function logRating(info: RatingRequest) {
+export async function logRating(info: RatingRequest & {user: {id, login, email}}) {
+    // validation
     if (info.responseId === undefined) {
         throw new Error(`Expected responseId field.`)
     }
-    const id = crypto.randomUUID()
-    const item: any = {
-        kind: { S: 'rating' },
-        userId: { S: String(info.session.account.id) },
-        responseId: { S: String(info.responseId) },
-        id: { S: String(id) },
-        timestamp: { S: (new Date(Date.now())).toISOString() },
-    }
     if ((info.comment === undefined) && (info.val === undefined)) {
         throw new Error('A rating needs either a comment or val field.')
-    }
-    if (info.comment !== undefined) {
-        item.comment = { S: info.comment }
     }
     if (info.val !== undefined) {
         if (![1, 0, -1].includes(info.val)) {
             throw new Error(`val field must be 1, 0, or -1`)
         }
-        item.val = { N: String(info.val) }
     }
+
     try {
-        const result = await client.send(
-            new PutItemCommand({
-                TableName: 'lean-chat',
-                Item: item
-            })
-        )
-        const status = result.$metadata.httpStatusCode
-        if (status !== 200) {
-            throw new Error(`Dynamo returned status ${status}`)
-        }
+        await put({
+            kind: 'rating',
+            userId: String(info.user.id),
+            responseId: String(info.responseId),
+            id: crypto.randomUUID(),
+            comment: info.comment,
+            val: info.val,
+        })
     } catch (error) {
         console.error(error)
     }
@@ -101,33 +124,21 @@ interface DocGenRating {
 }
 
 export async function logDocGenRating(info: DocGenRating) {
+    const val = info.rate ? { yes: 1, no: -1 }[info.rate] : 0
+    if (val === undefined) {
+        throw new Error(`Invalid rate field ${info.rate}`)
+    }
     try {
-        const val = info.rate ? { yes: 1, no: -1 }[info.rate] : 0
-        const id = crypto.randomUUID()
-        const item: any = {
-            id: { S: String(id) },
-            digest: {S: String(info.digest)},
-            kind: { S: 'docgen-rating' },
-            timestamp: { S: (new Date(Date.now())).toISOString() },
-            val: { N: String(val) },
-            decl: {S: info.decl},
-            statement: {S: info.statement}
-        }
-        if (info.edit) {
-            item.edit = { S: String(info.edit) }
-        }
-        const result = await client.send(
-            new PutItemCommand({
-                TableName: 'lean-chat',
-                Item: item
-            })
-        )
-        const status = result.$metadata.httpStatusCode
-        if (status !== 200) {
-            throw new Error(`Dynamo returned status ${status}`)
-        } else {
-            console.log(`decl: ${info.decl}  rate: ${info.rate}\nedit: ${info.edit ?? 'none'}`)
-        }
+        await put({
+            id: crypto.randomUUID(),
+            digest: String(info.digest),
+            kind: 'docgen-rating',
+            val,
+            decl: info.decl,
+            statement: info.statement,
+            edit: info.edit,
+        })
+        console.log(`decl: ${info.decl}  rate: ${info.rate}\nedit: ${info.edit ?? 'none'}`)
     } catch (error) {
         console.error(error)
     }
