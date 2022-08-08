@@ -89,7 +89,7 @@ async function handle(req: Request) {
             if (!email) {
                 throw new Error(`Failed to get an email address for user.`)
             }
-            console.log(`New session:\n  user: ${userInfo.login}\n  email: ${email}`);
+            console.log(`New session:\n  user: ${userInfo.login}\n  email: ${email}\n     id: ${id}`);
             sessionsCache.set(access_token, { email, id, login: userInfo.login })
         }
         const user = sessionsCache.get(access_token)!
