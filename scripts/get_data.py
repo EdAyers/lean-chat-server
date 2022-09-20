@@ -139,8 +139,8 @@ if __name__ == '__main__':
     chats = get_chats()
     x = set()
 
-    for chat in chats:
-        print(chat.input_text + "\n")
+    for chat in sorted(chats, key= lambda x: x.timestamp):
+        print(chat.user_id + ": " + chat.input_text + "\n> " + chat.response_plaintext + "\n")
         x.add(chat.user_id)
 
     print(f"Found {len(chats)} chats.")
